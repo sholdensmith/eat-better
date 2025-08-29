@@ -2,10 +2,18 @@ import { z } from 'zod';
 
 export const TZ = 'America/Los_Angeles';
 
-export function validateSyncKey(h: Headers): string | null {
-  const k = h.get('X-Sync-Key');
-  if (!k) return null;
-  if (k.length < 16) return null; // simple sanity check; UUID v4 is 36 chars
+export function validateSyncKey(h: Headers | Record<string, any> | null | undefined): string | null {
+  if (!h) return null;
+  let k: any = null;
+  const anyH = h as any;
+  if (typeof anyH.get === 'function') {
+    k = anyH.get('X-Sync-Key') || anyH.get('x-sync-key');
+  } else {
+    // Netlify provides a plain object with lowercased header names
+    k = anyH['x-sync-key'] || anyH['X-Sync-Key'];
+  }
+  if (!k || typeof k !== 'string') return null;
+  if (k.length < 16) return null; // basic sanity check
   return k;
 }
 
