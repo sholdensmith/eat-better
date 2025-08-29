@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Builds / output
+dist/
+.netlify/
+
+# Env and local configs
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+*.log
+.pnpm-store/
+
