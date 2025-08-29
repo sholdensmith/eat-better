@@ -55,7 +55,7 @@ create index if not exists day_entries_sync_day_idx
 
 RLS: optional. If enabled, add a policy allowing only service role (or disable RLS for MVP since only functions access it).
 
-Note: The functions now generate `id` values server-side. If you don’t enable `pgcrypto` (for `gen_random_uuid()`), inserts will still work because an `id` is provided explicitly. Enabling the extension is still recommended but not required.
+Note: Functions generate `id` values server-side using Node’s `crypto.randomUUID()`. Enabling `pgcrypto` is optional.
 
 ## Local development
 

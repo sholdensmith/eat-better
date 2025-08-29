@@ -2,6 +2,7 @@ import type { Handler } from '@netlify/functions';
 import { ParsedFoodSchema, hygienePurge, todayKeyLA, validateSyncKey, rateLimit } from './_shared/util';
 import { z } from 'zod';
 import { sbInsert } from './_shared/util';
+import { randomUUID } from 'crypto';
 
 const BodySchema = z.object({
   dayKey: z.string().min(10),
@@ -19,7 +20,7 @@ export const handler: Handler = async (event) => {
     const parsed = BodySchema.parse(JSON.parse(event.body || '{}'));
     const nowIso = new Date().toISOString();
     const rows = parsed.items.map((it) => ({
-      id: (globalThis as any).crypto?.randomUUID ? (globalThis as any).crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: randomUUID(),
       sync_key: syncKey,
       day_key: parsed.dayKey || todayKeyLA(),
       consumed_at: parsed.consumedAt || nowIso,

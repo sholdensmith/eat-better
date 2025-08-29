@@ -28,6 +28,7 @@ export default function App() {
             <nav className="flex items-center gap-4 text-sm">
               <Link to="/">Dashboard</Link>
               <Link to="/settings">Settings</Link>
+              <a href="/api/health" target="_blank" rel="noreferrer" className="text-gray-500">Health</a>
             </nav>
           </div>
         </header>
@@ -38,4 +39,3 @@ export default function App() {
     </QueryClientProvider>
   );
 }
-
