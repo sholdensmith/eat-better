@@ -51,7 +51,7 @@ export function rateLimit(key: string, minIntervalMs = 150): boolean {
 }
 
 // Supabase REST helpers
-function supabaseHeaders() {
+export function supabaseHeaders() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const url = process.env.SUPABASE_URL;
   if (!key || !url) {
