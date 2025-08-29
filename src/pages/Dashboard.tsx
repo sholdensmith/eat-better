@@ -3,7 +3,7 @@ import ProgressCard from '../components/ProgressCard';
 import QuickAdd from '../components/QuickAdd';
 import EntryList from '../components/EntryList';
 import { deleteEntry, getEntries, Entry } from '../lib/api';
-import { formatDayKey, incrementDayKey, nextLocalMidnightDelayMs, todayKeyLA } from '../lib/date';
+import { nextLocalMidnightDelayMs, todayKeyLA } from '../lib/date';
 import { getLastDayKey, setLastDayKey, loadTargets } from '../lib/storage';
 
 export default function Dashboard() {
@@ -63,11 +63,7 @@ export default function Dashboard() {
   return (
     <div className="pb-72">
       <div className="flex items-center justify-between mb-4">
-        <div className="text-xl font-semibold">{isToday ? `Today, ${dateLabel}` : dayKey}</div>
-        <div className="flex gap-2">
-          <button className="px-2 py-1 border rounded" onClick={()=>setDayKey(incrementDayKey(dayKey, -1))}>{'<'}</button>
-          <button className="px-2 py-1 border rounded" onClick={()=>setDayKey(incrementDayKey(dayKey, +1))}>{'>'}</button>
-        </div>
+        <div className="text-xl font-semibold">Today, {dateLabel}</div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
