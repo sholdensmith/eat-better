@@ -42,7 +42,7 @@ export default function Settings() {
         <div className="font-medium mb-2">Profile</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <input className="border rounded px-3 py-2" placeholder="Weight (e.g., 190 lb or 86 kg)" value={weight} onChange={e=>setWeight(e.target.value)} />
-          <input className="border rounded px-3 py-2" placeholder="Height (e.g., 5'10\" or 178 cm)" value={height} onChange={e=>setHeight(e.target.value)} />
+          <input className="border rounded px-3 py-2" placeholder="Height (e.g., 5 ft 10 in or 178 cm)" value={height} onChange={e=>setHeight(e.target.value)} />
         </div>
         <button className="mt-3 px-3 py-2 border rounded" onClick={recalc}>Recalculate suggestions</button>
       </div>
@@ -68,4 +68,3 @@ export default function Settings() {
     </div>
   );
 }
-
