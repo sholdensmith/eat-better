@@ -44,7 +44,11 @@ export function rateLimit(key: string, minIntervalMs = 150): boolean {
 
 // Supabase REST helpers
 function supabaseHeaders() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = process.env.SUPABASE_URL;
+  if (!key || !url) {
+    throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  }
   return {
     apikey: key,
     Authorization: `Bearer ${key}`,
@@ -54,14 +58,18 @@ function supabaseHeaders() {
 }
 
 export async function sbInsert(table: string, rows: any[]) {
-  const url = `${process.env.SUPABASE_URL}/rest/v1/${table}`;
+  const urlBase = process.env.SUPABASE_URL;
+  if (!urlBase) throw new Error('Missing SUPABASE_URL');
+  const url = `${urlBase}/rest/v1/${table}`;
   const res = await fetch(url, { method: 'POST', headers: supabaseHeaders(), body: JSON.stringify(rows) });
   if (!res.ok) throw new Error(`Supabase insert failed: ${res.status}`);
   return res.json();
 }
 
 export async function sbSelect(table: string, query: string, order?: string) {
-  const url = new URL(`${process.env.SUPABASE_URL}/rest/v1/${table}`);
+  const urlBase = process.env.SUPABASE_URL;
+  if (!urlBase) throw new Error('Missing SUPABASE_URL');
+  const url = new URL(`${urlBase}/rest/v1/${table}`);
   url.searchParams.set('select', '*');
   // query like: sync_key=eq.xxx&day_key=eq.YYYY-MM-DD
   for (const kv of query.split('&')) {
@@ -75,7 +83,9 @@ export async function sbSelect(table: string, query: string, order?: string) {
 }
 
 export async function sbDelete(table: string, query: string) {
-  const url = new URL(`${process.env.SUPABASE_URL}/rest/v1/${table}`);
+  const urlBase = process.env.SUPABASE_URL;
+  if (!urlBase) throw new Error('Missing SUPABASE_URL');
+  const url = new URL(`${urlBase}/rest/v1/${table}`);
   for (const kv of query.split('&')) {
     const [k,v] = kv.split('=');
     if (k) url.searchParams.set(k, v);
@@ -103,4 +113,3 @@ export const ParsedFoodSchema = z.object({
   assumptions: z.array(z.string()).optional(),
 });
 export const ParseResponseSchema = z.object({ items: z.array(ParsedFoodSchema) });
-

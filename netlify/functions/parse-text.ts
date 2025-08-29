@@ -19,6 +19,9 @@ Rules:
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
 async function callOpenAI(text: string): Promise<string> {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
   const body = {
     model: MODEL,
     messages: [
@@ -66,4 +69,3 @@ export const handler: Handler = async (event) => {
     return { statusCode: 500, body: `Error: ${err.message || 'unknown'}` };
   }
 };
-
