@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import ProgressCard from '../components/ProgressCard';
 import QuickAdd from '../components/QuickAdd';
-import EntryList from '../components/EntryList';
-import { deleteEntry, getEntries, Entry } from '../lib/api';
+import { getEntries, Entry } from '../lib/api';
 import { nextLocalMidnightDelayMs, todayKeyLA } from '../lib/date';
 import { getLastDayKey, setLastDayKey, loadTargets } from '../lib/storage';
 
@@ -51,17 +50,8 @@ export default function Dashboard() {
     return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'America/Los_Angeles' }).format(d);
   })();
 
-  async function onDelete(id: string) {
-    // optimistic
-    const prev = entries;
-    setEntries(e => e.filter(x => x.id !== id));
-    try { await deleteEntry(id); } catch {
-      setEntries(prev); // rollback
-    }
-  }
-
   return (
-    <div className="pb-72">
+    <div className="pb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="text-xl font-semibold">Today, {dateLabel}</div>
       </div>
@@ -76,9 +66,6 @@ export default function Dashboard() {
       </div>
 
       <QuickAdd disabled={!isToday} onSaved={()=>fetchEntries(dayKey)} />
-
-
-      <EntryList entries={entries} onDelete={onDelete} />
     </div>
   );
 }

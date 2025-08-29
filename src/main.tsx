@@ -5,6 +5,7 @@ import './index.css';
 import App from './App';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
+import TodaysFood from './pages/TodaysFood';
 
 const router = createBrowserRouter([
   {
@@ -12,6 +13,7 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <Dashboard /> },
+      { path: 'today', element: <TodaysFood /> },
       { path: 'settings', element: <Settings /> },
     ],
   },
@@ -22,4 +24,3 @@ createRoot(document.getElementById('root')!).render(
     <RouterProvider router={router} />
   </StrictMode>
 );
-
