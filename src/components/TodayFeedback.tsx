@@ -55,18 +55,8 @@ export default function TodayFeedback({ entries, totals, targets }: Props) {
       ) : (
         <div className="mb-1 text-gray-700">No entries yet today.</div>
       )}
-      <div className="text-gray-800">
-        {calTarget ? (
-          <>
-            So far: {Math.round(totals.calories)}/{Math.round(calTarget)} kcal
-            {proteinTarget ? ` · ${Math.round(totals.protein)}/${Math.round(proteinTarget)}g protein` : ''}.
-          </>
-        ) : (
-          <>Calories so far: {Math.round(totals.calories)} kcal{proteinTarget ? ` · ${Math.round(totals.protein)}/${Math.round(proteinTarget)}g protein` : ''}.</>
-        )}
-      </div>
+      {/* Progress line intentionally omitted; shown elsewhere on dashboard */}
       <div className="text-gray-900 mt-1">{feedback}</div>
     </div>
   );
 }
-
