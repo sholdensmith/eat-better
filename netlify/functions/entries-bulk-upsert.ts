@@ -19,6 +19,7 @@ export const handler: Handler = async (event) => {
     const parsed = BodySchema.parse(JSON.parse(event.body || '{}'));
     const nowIso = new Date().toISOString();
     const rows = parsed.items.map((it) => ({
+      id: (globalThis as any).crypto?.randomUUID ? (globalThis as any).crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       sync_key: syncKey,
       day_key: parsed.dayKey || todayKeyLA(),
       consumed_at: parsed.consumedAt || nowIso,
@@ -38,4 +39,3 @@ export const handler: Handler = async (event) => {
     return { statusCode: 400, body: `Error: ${err.message || 'bad request'}` };
   }
 };
-
