@@ -62,6 +62,7 @@ Note: Functions generate `id` values server-side using Node’s `crypto.randomUU
 - Install deps: `npm install`
 - Run dev server: `npm run dev`
 - Netlify Functions run via Netlify during deploy. For local testing you can use Netlify CLI (`netlify dev`), but not required to iterate UI.
+ - Client-side routing: `netlify.toml` includes a SPA fallback redirect so refreshing `/settings` or other routes works (`/* -> /index.html`).
 
 ## Functions (API)
 
