@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import ProgressCard from '../components/ProgressCard';
 import QuickAdd from '../components/QuickAdd';
 import EntryList from '../components/EntryList';
-import PairDevices from '../components/PairDevices';
 import { deleteEntry, getEntries, Entry } from '../lib/api';
 import { formatDayKey, incrementDayKey, nextLocalMidnightDelayMs, todayKeyLA } from '../lib/date';
 import { getLastDayKey, setLastDayKey, loadTargets } from '../lib/storage';
@@ -82,12 +81,8 @@ export default function Dashboard() {
 
       <QuickAdd disabled={!isToday} onSaved={()=>fetchEntries(dayKey)} />
 
-      <div className="mt-4">
-        <PairDevices />
-      </div>
 
       <EntryList entries={entries} onDelete={onDelete} />
     </div>
   );
 }
-

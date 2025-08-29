@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Targets, loadTargets, saveTargets } from '../lib/storage';
+import PairDevices from '../components/PairDevices';
 
 function roundToNearest25(n: number) { return Math.round(n / 25) * 25; }
 
@@ -37,7 +38,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-20">
       <div className="p-4 border rounded-md bg-white">
         <div className="font-medium mb-2">Profile</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -65,6 +66,8 @@ export default function Settings() {
         </div>
         <button className="mt-3 px-3 py-2 border rounded bg-blue-600 text-white" onClick={onSave}>Save</button>
       </div>
+
+      <PairDevices />
     </div>
   );
 }
