@@ -24,11 +24,7 @@ export default function TodaysFood() {
 
   return (
     <div className="pb-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-xl font-semibold">Today's Food</div>
-      </div>
       <EntryList entries={entries} onDelete={onDelete} />
     </div>
   );
 }
-
