@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import ProgressCard from '../components/ProgressCard';
 import QuickAdd from '../components/QuickAdd';
+import TodayFeedback from '../components/TodayFeedback';
 import { getEntries, Entry } from '../lib/api';
 import { nextLocalMidnightDelayMs, todayKeyLA } from '../lib/date';
 import { getLastDayKey, setLastDayKey, loadTargets } from '../lib/storage';
@@ -66,6 +67,7 @@ export default function Dashboard() {
       </div>
 
       <QuickAdd disabled={!isToday} onSaved={()=>fetchEntries(dayKey)} />
+      <TodayFeedback entries={entries} totals={totals} targets={targets} />
     </div>
   );
 }
