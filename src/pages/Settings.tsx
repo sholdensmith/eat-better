@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Targets, loadTargets, saveTargets } from '../lib/storage';
+import { Targets, loadTargets, saveTargets, loadProfile, saveProfile } from '../lib/storage';
 import PairDevices from '../components/PairDevices';
 
 function roundToNearest25(n: number) { return Math.round(n / 25) * 25; }
@@ -17,6 +17,16 @@ export default function Settings() {
   useEffect(() => {
     const t = loadTargets();
     if (t) setTargets(t);
+    const p = loadProfile();
+    if (p) {
+      setWeight(p.weight || '');
+      setHeight(p.height || '');
+      setAge(String(p.age ?? ''));
+      setSex((p.sex as any) || 'male');
+      setActivity(String(p.activity ?? '1.375'));
+      setDeficit(String(p.deficit ?? '500'));
+      setGoalWeight(p.goalWeight || '');
+    }
   }, []);
 
   function parseWeight(w: string): number | null {
@@ -77,6 +87,16 @@ export default function Settings() {
 
   function onSave() {
     saveTargets(targets);
+    const profile = {
+      weight,
+      height,
+      age: parseInt(age || '0', 10) || 0,
+      sex,
+      activity: parseFloat(activity || '1.375') || 1.375,
+      deficit: parseFloat(deficit || '0') || 0,
+      goalWeight: goalWeight || undefined,
+    };
+    saveProfile(profile);
   }
 
   return (

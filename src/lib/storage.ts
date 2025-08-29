@@ -7,9 +7,20 @@ export type Targets = {
   fat_g?: number | null;
 };
 
+export type Profile = {
+  weight: string;       // raw user input, e.g., "211 lb" or "96 kg"
+  height: string;       // raw user input, e.g., "5 ft 7 in" or "170 cm"
+  age: number;          // years
+  sex: 'male' | 'female';
+  activity: number;     // multiplier (e.g., 1.375)
+  deficit: number;      // kcal/day
+  goalWeight?: string;  // optional raw input
+};
+
 const SYNC_KEY = 'syncKey';
 const TARGETS_KEY = 'targets';
 const LAST_DAY_KEY = 'lastDayKey';
+const PROFILE_KEY = 'profile';
 
 export function getOrCreateSyncKey(): string {
   let k = localStorage.getItem(SYNC_KEY);
@@ -56,3 +67,12 @@ export function setLastDayKey(k: string) {
   localStorage.setItem(LAST_DAY_KEY, k);
 }
 
+export function saveProfile(p: Profile) {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+}
+
+export function loadProfile(): Profile | null {
+  const raw = localStorage.getItem(PROFILE_KEY);
+  if (!raw) return null;
+  try { return JSON.parse(raw) as Profile; } catch { return null; }
+}
