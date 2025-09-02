@@ -54,8 +54,8 @@ export const handler: Handler = async () => {
           body: JSON.stringify({
             model,
             input: [
-              { role: 'system', content: [{ type: 'text', text: 'You are a health probe.' }] },
-              { role: 'user', content: [{ type: 'text', text: 'ping' }] },
+              { role: 'system', content: [{ type: 'input_text', text: 'You are a health probe.' }] },
+              { role: 'user', content: [{ type: 'input_text', text: 'ping' }] },
             ],
             temperature: 0,
             max_output_tokens: 1,

@@ -75,8 +75,8 @@ async function callOpenAIWithModel(model: string, text: string, tighten = false)
   const body: any = {
     model,
     input: [
-      { role: 'system', content: [{ type: 'text', text: SYSTEM_PROMPT }] },
-      { role: 'user', content: [{ type: 'text', text: tighten ? text + '\nReturn JSON ONLY.' : text }] },
+      { role: 'system', content: [{ type: 'input_text', text: SYSTEM_PROMPT }] },
+      { role: 'user', content: [{ type: 'input_text', text: tighten ? text + '\nReturn JSON ONLY.' : text }] },
     ],
     temperature: 0.2,
     response_format: { type: 'json_schema', json_schema: RESPONSE_JSON_SCHEMA },
