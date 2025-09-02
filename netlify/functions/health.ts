@@ -58,7 +58,7 @@ export const handler: Handler = async () => {
               { role: 'user', content: [{ type: 'input_text', text: 'ping' }] },
             ],
             temperature: 0,
-            max_output_tokens: 1,
+            max_output_tokens: 16,
           }),
         });
         openai.status = res.status;
