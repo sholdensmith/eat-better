@@ -34,6 +34,28 @@ async function request(path: string, init?: RequestInit) {
   return res;
 }
 
+export type OpenAIHealth = {
+  configuredModel: string;
+  attemptedModel: string;
+  fallbackModel: string;
+  ok: boolean;
+  usedFallback: boolean;
+  status: number;
+  error?: string;
+};
+
+export type HealthResponse = {
+  env: { SUPABASE_URL: boolean; SUPABASE_SERVICE_ROLE_KEY: boolean; OPENAI_API_KEY: boolean };
+  supabase: { reachable: boolean; tableExists: boolean; status: number; error?: string };
+  openai: OpenAIHealth;
+};
+
+export async function getHealth(): Promise<HealthResponse> {
+  const res = await fetch(`${API}/health`, { headers: { 'Content-Type': 'application/json' } });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json();
+}
+
 export async function parseText(text: string): Promise<{ items: ParsedFood[] }> {
   const res = await request('/parse-text', {
     method: 'POST',
@@ -59,4 +81,3 @@ export async function deleteEntry(id: string) {
   const res = await request(`/entries-delete?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
   return res.json();
 }
-

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Targets, loadTargets, saveTargets, loadProfile, saveProfile } from '../lib/storage';
+import { getHealth, HealthResponse } from '../lib/api';
 import PairDevices from '../components/PairDevices';
 
 function roundToNearest25(n: number) { return Math.round(n / 25) * 25; }
@@ -13,6 +14,8 @@ export default function Settings() {
   const [activity, setActivity] = useState('1.375'); // lightly active default
   const [deficit, setDeficit] = useState('500');
   const [goalWeight, setGoalWeight] = useState('');
+  const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [healthError, setHealthError] = useState<string | null>(null);
 
   useEffect(() => {
     const t = loadTargets();
@@ -27,6 +30,8 @@ export default function Settings() {
       setDeficit(String(p.deficit ?? '500'));
       setGoalWeight(p.goalWeight || '');
     }
+    // fetch health info (fire-and-forget)
+    getHealth().then(setHealth).catch(err => setHealthError(err?.message || 'Health check failed'));
   }, []);
 
   function parseWeight(w: string): number | null {
@@ -146,6 +151,22 @@ export default function Settings() {
           </label>
         </div>
         <button className="mt-3 px-3 py-2 border rounded bg-blue-600 text-white" onClick={onSave}>Save</button>
+      </div>
+
+      <div className="p-4 border rounded-md bg-white">
+        <div className="font-medium mb-2">AI Model Health</div>
+        {!health && !healthError && <div className="text-sm text-gray-600">Checking OpenAI model…</div>}
+        {healthError && <div className="text-sm text-red-600">{healthError}</div>}
+        {health && (
+          <div className="text-sm">
+            <div>Configured: <span className="font-mono">{health.openai.configuredModel}</span></div>
+            <div>Attempted: <span className="font-mono">{health.openai.attemptedModel || '—'}</span></div>
+            <div>Fallback: <span className="font-mono">{health.openai.fallbackModel}</span></div>
+            <div>Status: {health.openai.ok ? <span className="text-green-700">OK</span> : <span className="text-red-700">Error</span>} (HTTP {health.openai.status || 0})</div>
+            {health.openai.usedFallback && <div className="text-amber-700">Using fallback model</div>}
+            {health.openai.error && <div className="text-gray-700">{health.openai.error}</div>}
+          </div>
+        )}
       </div>
 
       <PairDevices />

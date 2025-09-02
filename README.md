@@ -1,6 +1,6 @@
 % Eat Better (MVP)
 
-Single-user, cross-device food logging app with pairing key sync. No login; Netlify Functions call OpenAI (server-side) and Supabase (service-role) for cloud sync. The UI resets daily (America/Los_Angeles).
+ Single-user, cross-device food logging app with pairing key sync. No login; Netlify Functions call OpenAI (server-side, via Responses API) and Supabase (service-role) for cloud sync. The UI resets daily (America/Los_Angeles).
 
 ## Tech
 
@@ -27,7 +27,7 @@ Single-user, cross-device food logging app with pairing key sync. No login; Netl
 - `SUPABASE_URL` (e.g., https://YOUR-PROJECT.supabase.co)
 - `SUPABASE_SERVICE_ROLE_KEY` (Service role key; never exposed to client)
 - `OPENAI_API_KEY` (Server-side only)
-- Optional: `OPENAI_MODEL` (default `gpt-4o-mini`)
+- Optional: `OPENAI_MODEL` (default `gpt-4.1`). Uses the OpenAI Responses API; you can also set `gpt-4o` if `gpt-4.1` isn’t enabled on your account.
 
 ## Supabase schema
 
@@ -68,7 +68,7 @@ Note: Functions generate `id` values server-side using Node’s `crypto.randomUU
 
 Headers: client sends `X-Sync-Key: <syncKey>`.
 
-- `POST /api/parse-text` → Calls OpenAI with a strict JSON-only prompt. Returns `{ items: ParsedFood[] }`.
+- `POST /api/parse-text` → Calls OpenAI Responses API with a strict JSON schema. Returns `{ items: ParsedFood[] }`.
 - `POST /api/entries-bulk-upsert` → Body `{ dayKey, items, consumedAt? }` inserts rows for `(sync_key, day_key)`.
 - `GET /api/entries-get-today?dayKey=YYYY-MM-DD` → Returns entries sorted by time.
 - `DELETE /api/entries-delete?id=<id>` → Hard-deletes a row scoped to `sync_key`.

@@ -16,22 +16,72 @@ Rules:
 - If uncertain, choose the most reasonable assumption and note it in assumptions.
 - Use typical US grocery items and realistic macro values.`;
 
-const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const DEFAULT_MODEL = 'gpt-4.1';
+const FALLBACK_MODEL = 'gpt-4o';
+const MODEL = process.env.OPENAI_MODEL || DEFAULT_MODEL;
 
-async function callOpenAI(text: string): Promise<string> {
+const RESPONSE_JSON_SCHEMA = {
+  name: 'ParseResponse',
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            item: { type: 'string' },
+            qty: { type: 'number' },
+            unit: { type: 'string' },
+            calories_kcal: { type: 'number' },
+            protein_g: { type: 'number' },
+            carbs_g: { type: 'number' },
+            fat_g: { type: 'number' },
+            assumptions: { type: 'array', items: { type: 'string' } },
+          },
+          required: ['item', 'qty', 'unit', 'calories_kcal', 'protein_g', 'carbs_g', 'fat_g'],
+        },
+      },
+    },
+    required: ['items'],
+  },
+  strict: true,
+} as const;
+
+function extractResponseText(data: any): string | null {
+  if (!data) return null;
+  if (typeof data.output_text === 'string' && data.output_text.length > 0) return data.output_text;
+  const t = data.content?.[0]?.text;
+  if (typeof t === 'string' && t.length > 0) return t;
+  return null;
+}
+
+function isModelAvailabilityError(status: number, body: any): boolean {
+  const code = body?.error?.code || body?.code;
+  const msg: string = body?.error?.message || body?.message || '';
+  if (code === 'model_not_found') return true;
+  if (status === 404) return true;
+  if (/model\s+(?:not|isn't|is not)\s+found/i.test(msg)) return true;
+  if (/You don't have access to this model/i.test(msg)) return true;
+  return false;
+}
+
+async function callOpenAIWithModel(model: string, text: string, tighten = false): Promise<string> {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error('Missing OPENAI_API_KEY');
   }
-  const body = {
-    model: MODEL,
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: text },
+  const body: any = {
+    model,
+    input: [
+      { role: 'system', content: [{ type: 'text', text: SYSTEM_PROMPT }] },
+      { role: 'user', content: [{ type: 'text', text: tighten ? text + '\nReturn JSON ONLY.' : text }] },
     ],
     temperature: 0.2,
-    response_format: { type: 'json_object' },
-  } as any;
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    response_format: { type: 'json_schema', json_schema: RESPONSE_JSON_SCHEMA },
+  };
+  const res = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,11 +89,30 @@ async function callOpenAI(text: string): Promise<string> {
     },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`OpenAI error: ${res.status}`);
-  const data = await res.json();
-  const content = data.choices?.[0]?.message?.content;
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const status = res.status;
+    const msg = (data?.error?.message || `OpenAI error: ${status}`);
+    const err: any = new Error(msg);
+    err.status = status;
+    err.body = data;
+    throw err;
+  }
+  const content = extractResponseText(data);
   if (typeof content !== 'string') throw new Error('No content');
   return content;
+}
+
+async function callOpenAI(text: string, tighten = false): Promise<string> {
+  try {
+    return await callOpenAIWithModel(MODEL, text, tighten);
+  } catch (err: any) {
+    // If the configured/default model is unavailable, transparently retry with fallback
+    if (MODEL !== FALLBACK_MODEL && isModelAvailabilityError(err?.status, err?.body)) {
+      return await callOpenAIWithModel(FALLBACK_MODEL, text, tighten);
+    }
+    throw err;
+  }
 }
 
 export const handler: Handler = async (event) => {
@@ -57,11 +126,10 @@ export const handler: Handler = async (event) => {
     if (!text || typeof text !== 'string') return { statusCode: 400, body: 'Bad input' };
     let out: any;
     try {
-      const raw = await callOpenAI(text);
+      const raw = await callOpenAI(text, false);
       out = ParseResponseSchema.parse(JSON.parse(raw));
     } catch (e1) {
-      // retry once with a stricter instruction appended
-      const raw2 = await callOpenAI(text + '\nReturn JSON ONLY.');
+      const raw2 = await callOpenAI(text, true);
       out = ParseResponseSchema.parse(JSON.parse(raw2));
     }
     return { statusCode: 200, body: JSON.stringify(out) };

@@ -9,6 +9,15 @@ export const handler: Handler = async () => {
   };
 
   let supabase = { reachable: false, tableExists: false, status: 0, error: undefined as string | undefined };
+  let openai = {
+    configuredModel: (process.env.OPENAI_MODEL || 'gpt-4.1'),
+    attemptedModel: '' as string,
+    fallbackModel: 'gpt-4o',
+    ok: false,
+    usedFallback: false,
+    status: 0,
+    error: undefined as string | undefined,
+  };
   try {
     const base = process.env.SUPABASE_URL;
     if (!base) throw new Error('Missing SUPABASE_URL');
@@ -31,7 +40,51 @@ export const handler: Handler = async () => {
     supabase.error = e?.message || 'unknown error';
   }
 
-  const body = JSON.stringify({ env, supabase });
+  // OpenAI Responses API health probe (minimal token usage)
+  if (env.OPENAI_API_KEY) {
+    const tryModel = async (model: string) => {
+      openai.attemptedModel = model;
+      try {
+        const res = await fetch('https://api.openai.com/v1/responses', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model,
+            input: [
+              { role: 'system', content: [{ type: 'text', text: 'You are a health probe.' }] },
+              { role: 'user', content: [{ type: 'text', text: 'ping' }] },
+            ],
+            temperature: 0,
+            max_output_tokens: 1,
+          }),
+        });
+        openai.status = res.status;
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          openai.error = data?.error?.message || `HTTP ${res.status}`;
+          return false;
+        }
+        openai.ok = true;
+        return true;
+      } catch (e: any) {
+        openai.error = e?.message || 'network error';
+        return false;
+      }
+    };
+
+    const primary = openai.configuredModel;
+    const okPrimary = await tryModel(primary);
+    if (!okPrimary && primary !== openai.fallbackModel) {
+      const okFallback = await tryModel(openai.fallbackModel);
+      if (okFallback) openai.usedFallback = true;
+    }
+  } else {
+    openai.error = 'Missing OPENAI_API_KEY';
+  }
+
+  const body = JSON.stringify({ env, supabase, openai });
   return { statusCode: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body };
 };
-
